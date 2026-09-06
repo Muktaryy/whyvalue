@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whyvalue"
+version = "0.1.0"
+description = "Ask your data why."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Muktar Yakub" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0"
+]
+keywords = [
+    "pandas",
+    "data-debugging",
+    "data-lineage",
+    "provenance",
+    "data-engineering",
+    "debugging"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
