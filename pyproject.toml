@@ -37,5 +37,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Muktaryy/whyvalue"
+Repository = "https://github.com/Muktaryy/whyvalue"
+Issues = "https://github.com/Muktaryy/whyvalue/issues"
+
 [tool.setuptools.packages.find]
 where = ["src"]
