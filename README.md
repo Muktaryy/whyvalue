@@ -1,32 +1,42 @@
+![WhyValue](docs/assets/branding.png)
+
 # WhyValue
 
 > Ask your data why.
 
-WhyValue is a lightweight developer tool for pandas that tracks data transformations and answers questions about how values in your DataFrames were created, modified, filtered, filled, aggregated, or removed.
+WhyValue is a developer-first Python library for tracking data transformations and explaining why values have the values they do.
 
-When working with complex pandas pipelines, it is easy to see *what* final value a cell holds, but much harder to answer *why* it has that value. WhyValue records transformation history while `why.watch()` is active so you can inspect line-by-line provenance using `why.explain()`, `why.trace()`, and `why.explain_removed()`.
+WhyValue captures end-to-end data provenance across:
+
+- Python lists and dictionaries (`TrackedList`, `TrackedDict`)
+- JSON files
+- CSV files
+- TXT files
+- HTTP APIs
+- pandas DataFrames & Series
 
 ---
 
-## 1. Why WhyValue?
+## The Core Idea
 
-A typical pandas pipeline might end with:
-
-```python
-price = 20
+```text
+SOURCE
+  ↓
+TRANSFORMATION
+  ↓
+VALUE
+  ↓
+EXPLANATION
 ```
 
-When an output looks unexpected, the critical question is:
+When working with data pipelines, it is easy to see *what* final value a variable holds, but much harder to answer *why* it has that value.
 
-> **Why is `price` 20?**
-
-Without tracking, finding the answer requires manually stepping through notebook cells or script transformations. WhyValue records execution history as operations occur and builds structured, human-readable explanations on demand.
+- `why.trace(obj)` tells you **what** happened.
+- `why.explain(obj, ...)` tells you **why** a specific value exists.
 
 ---
 
-## 2. Installation
-
-Intended release installation:
+## Installation
 
 ```bash
 pip install whyvalue
@@ -38,265 +48,177 @@ For local or development installation from source:
 pip install -e .
 ```
 
+*Note: WhyValue v0.2 development is complete and preparing for its formal v0.2.0 PyPI release.*
+
 ---
 
-## 3. Quick Start
+## Quick Start
+
+Track native Python dictionaries and lists:
 
 ```python
-import pandas as pd
 import whyvalue as why
 
-# Start tracking pandas operations
-why.watch()
+with why.watch():
+    user = why.track({
+        "name": "Ali",
+        "age": 21
+    })
 
-df = pd.DataFrame(
-    {
-        "price": [10, 20],
-        "quantity": [2, 3],
-    }
-)
+    user["age"] = 22
 
-df["total"] = df["price"] * df["quantity"]
-
-# Explain how total was computed for row 0
-why.explain(df, row=0, column="total")
-
-# Stop tracking and restore original pandas methods
-why.stop()
+    why.explain(user, key="age")
 ```
 
 **Output:**
 
 ```text
-Why is total = 20?
+Why is age = 22?
 
-price = 10
-quantity = 2
+Source:
+Memory object
 
-10 × 2
-→ total = 20
-```
-
----
-
-## 4. Core API
-
-### `why.watch()`
-Starts tracking supported pandas operations. Calling `why.watch()` multiple times is safe (subsequent calls are safe no-ops). Starting a new `why.watch()` session clears any previously recorded in-memory history.
-
-### `why.stop()`
-Stops tracking and restores original pandas methods. Calling `why.stop()` does not immediately erase recorded history, so previous history remains available until the next `why.watch()` session resets it.
-
-### `why.is_watching()`
-Returns `True` if WhyValue is currently actively tracking operations, and `False` otherwise.
-
-### `why.trace(obj)`
-Prints a high-level summary of recorded transformations for the given DataFrame.
-
-### `why.explain(obj, row, column=None)`
-Explains how a specific cell value was calculated or transformed, including arithmetic operands, applied functions, and sequential transformation steps.
-
-### `why.explain_removed(obj=None, row=None)`
-Explains why a specific row index was removed by a filter or `dropna()` operation.
-
----
-
-## 5. Sequential Transformation History
-
-When a column undergoes multiple sequential transformations, WhyValue records the full operation history:
-
-```python
-import pandas as pd
-import whyvalue as why
-
-why.watch()
-
-df = pd.DataFrame({"value": [1.234, None]})
-
-df["value"] = df["value"].fillna(0)
-df["value"] = df["value"].astype(float)
-df["value"] = df["value"].round(1)
-
-why.explain(df, row=1, column="value")
-
-why.stop()
-```
-
-**Output:**
-
-```text
-Why is value = 0.0?
+Format:
+Python object
 
 Transformation history:
 
-1. fillna(0)
-2. astype(<class 'float'>)
-3. round(1)
+1. Created dict {'name': 'Ali', 'age': 21}
+2. set age = 22
 
 Final:
-value = 0.0
+age = 22
 ```
-
-*Note: WhyValue records the sequence of operations applied to a column. It does not snapshot intermediate cell-value states between operations.*
 
 ---
 
-## 6. GroupBy Source History
+## Cross-Source Lineage Example
 
-WhyValue tracks column history across supported GroupBy aggregations:
+Load data from a CSV file, convert it to a pandas DataFrame via `why.to_dataframe()`, transform the columns, and explain the calculated result:
 
 ```python
-import pandas as pd
 import whyvalue as why
 
-why.watch()
+with why.watch():
+    rows = why.load_csv("sales.csv")
+    df = why.to_dataframe(rows)
 
-df = pd.DataFrame(
-    {
-        "category": ["A", "A", "B"],
-        "sales": [10.4, 20.6, 30.2],
-    }
-)
+    df["price"] = df["price"].astype(float)
+    df["quantity"] = df["quantity"].astype(int)
+    df["total"] = df["price"] * df["quantity"]
 
-df["sales"] = df["sales"].round(0)
-
-result = df.groupby("category")["sales"].sum()
-
-why.explain(result, row="A")
-
-why.stop()
+    why.explain(df, row=0, column="total")
 ```
-
-**Output:**
 
 ```text
-Why is sales = 31.0?
-
-Source transformation history:
-
-1. round(0)
-
-Aggregation:
-sum()
-
-Grouped by:
-category = A
-
-Final:
-sales = 31.0
+CSV
+ ↓
+Tracked data
+ ↓
+DataFrame
+ ↓
+transformations
+ ↓
+final value
+ ↓
+explanation
 ```
 
-**Supported GroupBy Aggregations in v0.1:**
-- `sum()`
-- `mean()`
-- `count()`
-- `min()`
-- `max()`
+WhyValue traces the final `total` cell all the way back to the original CSV file line and column name.
 
 ---
 
-## 7. Supported Pandas Features
+## Supported Features
 
-| Category | Supported Operations |
+| Category | Supported Capabilities |
 | :--- | :--- |
-| **Arithmetic** | Column-column (`+`, `-`, `*`, `/`), column-scalar, scalar-column, reverse arithmetic |
-| **Filtering** | Comparison operators (`>`, `>=`, `<`, `<=`, `==`, `!=`), combined AND (`&`), combined OR (`\|`) |
-| **Missing Data** | `fillna()`, `dropna(subset=[...])` |
-| **Column Operations** | `astype()`, `round()`, `map()` (dict mappings), `apply()` (func label) |
-| **DataFrame Operations**| `rename()`, `copy()` lineage isolation |
-| **Merges** | `DataFrame.merge()` (`on=`, common `how=` joins) |
-| **GroupBy** | `groupby()[col].sum()`, `mean()`, `count()`, `min()`, `max()` |
+| **Python** | `TrackedList`, `TrackedDict` |
+| **Data Sources** | JSON (`why.load_json`), CSV (`why.load_csv`), TXT (`why.load_txt`), HTTP GET APIs (`why.get`) |
+| **Pandas Operations** | Arithmetic (`+`, `-`, `*`, `/`), filtering (`>`, `>=`, `<`, `<=`, `==`, `!=`, `&`, `\|`), `fillna()`, `dropna(subset=[...])`, column operations (`astype`, `round`, `rename`, `map`, `apply`), DataFrame merges (`merge`), SeriesGroupBy aggregations (`sum`, `mean`, `count`, `min`, `max`) |
+| **Provenance & Inspection** | `why.trace()`, `why.explain()`, `why.explain_removed()`, explanation modes (`full`, `short`, `json`), optional state snapshots (`snapshot=True`), cross-source bridge (`why.to_dataframe()`) |
 
 ---
 
-## 8. Example: Removed Row Explanation
+## Data Sources
+
+WhyValue attaches structured origin metadata as data enters your Python session:
+
+- **JSON**: `file → JSON path → value` (e.g. `$.users[0].name`)
+- **CSV**: `file → row → column → value` (1-based data-row index mapping)
+- **TXT**: `file → line → value` (1-based line number tracking)
+- **HTTP**: `request → JSON path → value` (sanitized URL, status code, method)
+- **Python**: `tracked object → mutation → value` (`TrackedList`, `TrackedDict`)
+
+---
+
+## Snapshots
+
+When state snapshots are enabled during a watch session:
 
 ```python
-import pandas as pd
-import whyvalue as why
-
-why.watch()
-
-df = pd.DataFrame(
-    {
-        "name": ["Ali", "Ahmed", "Sara"],
-        "age": [25, None, 17],
-    }
-)
-
-df = df.dropna(subset=["age"])
-
-why.explain_removed(df, row=1)
-
-why.stop()
+with why.watch(snapshot=True):
+    df["val"] = df["val"].fillna(0)
 ```
 
-**Output:**
-
-```text
-Why was row 1 removed?
-
-dropna(subset=['age'])
-
-Row removed because required data was missing.
-```
+WhyValue captures before-and-after states for supported operations (such as `fillna`), allowing `why.explain()` to report exact previous values prior to transformation at the cost of additional memory.
 
 ---
 
-## 9. How It Works
+## Documentation
 
-While `why.watch()` is active, WhyValue hooks selected pandas methods and operators. Each operation generates a lightweight in-memory event linked to unique DataFrame lineage IDs.
+Full documentation, tutorials, and topic guides are available in the project documentation directory:
 
-When you call `why.explain()`, WhyValue inspects the recorded lineage graph and events for that DataFrame and column to reconstruct a human-readable explanation.
-
-WhyValue acts as an inspection layer on top of pandas; it does not replace or re-implement pandas data structures.
+[Read the documentation](docs/index.html)
 
 ---
 
-## 10. v0.1 Limitations
+## Project Status
 
-- **Pandas only:** Supported exclusively for pandas DataFrames and Series in v0.1.
-- **Active tracking required:** Operations are recorded only while `why.watch()` is active.
-- **In-memory history:** Event history is stored in memory and resets whenever `why.watch()` is called.
-- **No value snapshots:** WhyValue records operation history and parameters, but does not snapshot intermediate cell values between transformations.
-- **Merge provenance scope:** Merges record parent DataFrame IDs, join keys, and join types, but do not yet trace individual output column origins for overlapping/suffixed columns.
-- **GroupBy scope:** GroupBy aggregations are limited to `sum`, `mean`, `count`, `min`, and `max`.
-- **Method limitations:** `map()` provenance focuses on dictionary mappings; `apply()` records function name labels rather than analyzing function bodies.
-- **No external integrations yet:** NumPy, Requests/HTTP API, and SQL database lineage are not supported in v0.1.
+WhyValue v0.2 development is complete and preparing for release.
+
+Current test suite: **174 tests passing**.
+
+WhyValue is still an early-stage project.
 
 ---
 
-## 11. Roadmap
+## Limitations
 
-### v0.1 (Current)
-- Pandas operation explanations
-- Filter and removal tracing
-- Missing data tracking (`fillna`, `dropna`)
-- DataFrame copy & lineage isolation
-- Basic merge & GroupBy aggregation support
-- Sequential column transformation history
+- **Active tracking required:** Operations are recorded only while an active `why.watch()` session is running.
+- **In-memory history:** Event history is stored in memory and resets whenever a new `why.watch()` session starts.
+- **Pandas scope:** Operations cover selected pandas methods, arithmetic operators, filters, missing data handlers, and aggregations (not the entire pandas API).
+- **Cross-source requirement:** Cross-source pandas lineage requires bridging tracked inputs with `why.to_dataframe()`.
+- **Memory impact:** Enabling `snapshot=True` increases memory consumption by storing copy snapshots of transformed data.
+- **CSV string types:** Data loaded via `why.load_csv()` initially contains string values until explicitly coerced or transformed.
+- **HTTP helper scope:** HTTP tracking currently uses the explicit `why.get()` helper rather than globally intercepting all `requests` module calls.
+- **Unintegrated engines:** NumPy, Polars, SQL databases, and DuckDB are not yet supported.
 
-### Future
-- Column-origin provenance for complex merges
+---
+
+## Roadmap
+
+Future directions under consideration:
+
 - NumPy array integration
-- HTTP API / Requests data source tracking
-- SQL database lineage
-- Richer provenance graph visualization
-- Optional intermediate value snapshotting
+- Polars DataFrame integration
+- SQL and database query lineage
+- DuckDB engine support
+- Richer graph visualization for provenance chains
+- Broader pandas operation coverage
 
 ---
 
-## 12. Development
+## Development
 
-To run the test suite locally:
+Run the test suite locally:
 
 ```bash
 python -m pytest
 ```
 
-*(At the v0.1 release checkpoint, the test suite contains 49 passing tests.)*
+*(Current audited checkpoint: 174 passing tests.)*
 
-To build source distribution and wheel packages:
+Build distribution packages:
 
 ```bash
 python -m build
@@ -304,7 +226,7 @@ python -m build
 
 ---
 
-## 13. Status
+## Links
 
-**WhyValue v0.1.0** is an early-stage, experimental developer tool.
-
+- **GitHub Repository**: [https://github.com/Muktaryy/whyvalue](https://github.com/Muktaryy/whyvalue)
+- **PyPI Package**: [https://pypi.org/project/whyvalue/](https://pypi.org/project/whyvalue/)
