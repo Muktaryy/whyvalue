@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cross-Source Lineage — WhyValue</title>
+  <meta name="description" content="Learn how WhyValue connects HTTP APIs, CSV, JSON, and Python containers to pandas DataFrames with complete cross-source provenance tracking using why.to_dataframe().">
+  <meta name="theme-color" content="#0b0f19">
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('whyvalue_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="./js/main.js" defer></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header-wrapper">
+    <div class="header-container">
+      <a href="./index.html" class="brand-link" aria-label="WhyValue Homepage">
+        <svg class="logo-w-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wvHeaderGradCsl" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00B0FF" />
+              <stop offset="50%" stop-color="#1A73E8" />
+              <stop offset="100%" stop-color="#7C4DFF" />
+            </linearGradient>
+          </defs>
+          <path d="M15 25 L35 75 L50 45 L65 75 L85 25" stroke="url(#wvHeaderGradCsl)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <div class="brand-text-container">
+          <span class="brand-title">Why<span class="highlight">Value</span></span>
+          <span class="brand-tagline">Ask your data why</span>
+        </div>
+      </a>
+
+      <nav class="nav-right" aria-label="Main Navigation">
+        <a href="./getting-started.html" class="header-nav-link active">Documentation</a>
+        <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://pypi.org/project/whyvalue/" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm-1.5 3.5l7.5 4.38-3 1.75-7.5-4.38 3-1.75zm-6 4.38l6 3.5v7l-6-3.5v-7zm15 7l-6 3.5v-7l6-3.5v7z"/>
+          </svg>
+          <span>PyPI</span>
+        </a>
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="sidebar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sidebar Mobile Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" aria-label="Documentation Sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-list">
+          <li><a href="./getting-started.html" class="sidebar-link">Introduction</a></li>
+          <li><a href="./installation.html" class="sidebar-link">Installation</a></li>
+          <li><a href="./quick-start.html" class="sidebar-link">Quick Start</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Core Concepts</div>
+        <ul class="sidebar-list">
+          <li><a href="./watching-data.html" class="sidebar-link">Watching Data</a></li>
+          <li><a href="./explain.html" class="sidebar-link">explain()</a></li>
+          <li><a href="./trace.html" class="sidebar-link">trace()</a></li>
+          <li><a href="./snapshots.html" class="sidebar-link">Snapshots</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Python</div>
+        <ul class="sidebar-list">
+          <li><a href="./tracked-lists.html" class="sidebar-link">Tracked Lists</a></li>
+          <li><a href="./tracked-dicts.html" class="sidebar-link">Tracked Dicts</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Data Sources</div>
+        <ul class="sidebar-list">
+          <li><a href="./json.html" class="sidebar-link">JSON Provenance</a></li>
+          <li><a href="./csv.html" class="sidebar-link">CSV Provenance</a></li>
+          <li><a href="./txt.html" class="sidebar-link">TXT Provenance</a></li>
+          <li><a href="./http.html" class="sidebar-link">HTTP APIs</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Pandas</div>
+        <ul class="sidebar-list">
+          <li><a href="./pandas.html" class="sidebar-link">Pandas Integration</a></li>
+          <li><a href="./cross-source-lineage.html" class="sidebar-link active">Cross-Source Lineage</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Reference</div>
+        <ul class="sidebar-list">
+          <li><a href="./api-reference.html" class="sidebar-link">API Reference</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section>
+        <h1>Cross-Source Lineage</h1>
+        <p>
+          The core power of WhyValue is end-to-end provenance: tracking data from its origin (HTTP API, CSV, JSON, or Python data structure) all the way through standard pandas DataFrame transformations to final values.
+        </p>
+
+        <h2>End-to-End Lineage Flow</h2>
+        <div style="background: var(--wv-code-bg); border: 1px solid var(--wv-code-border); padding: 1rem 1.25rem; border-radius: var(--radius-md); font-family: var(--font-mono); color: var(--wv-accent-cyan); text-align: center; margin-bottom: 2rem;">
+          HTTP / CSV / JSON / Python &nbsp;→&nbsp; Tracked Container &nbsp;→&nbsp; why.to_dataframe() &nbsp;→&nbsp; pandas ops &nbsp;→&nbsp; why.explain()
+        </div>
+
+        <h2>The why.to_dataframe() API</h2>
+        <p>
+          <code>why.to_dataframe(data)</code> converts a <code>TrackedList</code> or <code>TrackedDict</code> into a pandas DataFrame while preserving lineage linkage across data source boundaries.
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>to_dataframe Signature</span>
+            <button class="copy-btn" aria-label="Copy to_dataframe signature">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">def</span> <span class="syn-fn">to_dataframe</span>(data: Union[TrackedList, TrackedDict]) -&gt; pd.DataFrame:
+    <span class="syn-str">"""
+    Converts a tracked container into a pandas DataFrame.
+    Must be called inside an active why.watch() context.
+    
+    Attaches '_whyvalue_id' and '_whyvalue_source' metadata to df.attrs
+    and registers a 'to_dataframe' provenance event.
+    """</span></code></pre>
+        </div>
+
+        <p>Key behavioral requirements of <code>why.to_dataframe()</code>:</p>
+        <ul style="margin-bottom: 1.5rem; padding-left: 1.25rem; line-height: 1.7;">
+          <li><strong>Must run inside watch context:</strong> Calling <code>why.to_dataframe()</code> outside an active <code>why.watch()</code> raises a <code>RuntimeError</code>.</li>
+          <li><strong>Requires tracked input:</strong> Passing untracked objects (e.g. raw Python lists, dicts, integers, or generators) raises a <code>TypeError</code>.</li>
+          <li><strong>Metadata propagation:</strong> Copies source metadata (file paths, HTTP endpoints, JSON paths, CSV row numbers) into <code>df.attrs</code>.</li>
+        </ul>
+
+        <h2>HTTP → Pandas Lineage (Flagship Example)</h2>
+        <p>
+          Fetch data from an external REST API, convert it to a DataFrame using <code>why.to_dataframe()</code>, compute derived metrics in pandas, and explain the final cell value back to the HTTP request:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>http_to_pandas.py</span>
+            <button class="copy-btn" aria-label="Copy HTTP to Pandas example">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">import</span> pandas <span class="syn-kw">as</span> pd
+<span class="syn-kw">import</span> whyvalue <span class="syn-kw">as</span> why
+
+<span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    <span class="syn-cm"># 1. Fetch JSON from HTTP API (returns TrackedList / TrackedDict)</span>
+    orders = why.<span class="syn-fn">get</span>(<span class="syn-str">"https://api.store.com/v1/orders?status=completed&amp;token=secret123"</span>)
+
+    <span class="syn-cm"># 2. Convert tracked JSON container into a pandas DataFrame</span>
+    df = why.<span class="syn-fn">to_dataframe</span>(orders)
+
+    <span class="syn-cm"># 3. Perform pandas arithmetic</span>
+    df[<span class="syn-str">"total"</span>] = df[<span class="syn-str">"subtotal"</span>] + df[<span class="syn-str">"tax"</span>]
+
+    <span class="syn-cm"># 4. Explain why row 0 total is 108.0</span>
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"total"</span>)</code></pre>
+        </div>
+
+        <p>Output printed to console showing full HTTP-to-Pandas lineage:</p>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Console Output</span>
+            <button class="copy-btn" aria-label="Copy console output">Copy</button>
+          </div>
+          <pre><code>Why is total = 108.0?
+
+Source: HTTP GET https://api.store.com/v1/orders?status=completed&amp;token=REDACTED
+Status: 200 OK
+
+Lineage path:
+1. HTTP Response -&gt; $[0].subtotal = 100.0
+2. HTTP Response -&gt; $[0].tax = 8.0
+3. why.to_dataframe()
+4. df["subtotal"] + df["tax"]
+-&gt; total = 108.0</code></pre>
+        </div>
+
+        <h2>CSV → Pandas Lineage</h2>
+        <p>
+          Load CSV rows with <code>why.load_csv()</code> and convert to a DataFrame:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>csv_to_pandas.py</span>
+            <button class="copy-btn" aria-label="Copy CSV to Pandas example">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    data = why.<span class="syn-fn">load_csv</span>(<span class="syn-str">"sales.csv"</span>)
+    df = why.<span class="syn-fn">to_dataframe</span>(data)
+    df[<span class="syn-str">"revenue"</span>] = df[<span class="syn-str">"units"</span>] * df[<span class="syn-str">"price"</span>]
+
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"revenue"</span>)</code></pre>
+        </div>
+
+        <p>
+          Notice that CSV origin coordinates use 1-based data-row indexing (e.g. <code>Row 1</code> = first data row below header) which maps seamlessly to DataFrame 0-indexed positions (row index 0).
+        </p>
+
+        <h2>JSON File → Pandas Lineage</h2>
+        <p>
+          Load nested JSON files with <code>why.load_json()</code> and trace field origins via JSON path notation (e.g. <code>$.users[0].name</code> or <code>$["items"][0]</code>):
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>json_to_pandas.py</span>
+            <button class="copy-btn" aria-label="Copy JSON to Pandas example">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    records = why.<span class="syn-fn">load_json</span>(<span class="syn-str">"metrics.json"</span>)
+    df = why.<span class="syn-fn">to_dataframe</span>(records)
+    df[<span class="syn-str">"score_pct"</span>] = df[<span class="syn-str">"score"</span>] * <span class="syn-num">100</span>
+
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"score_pct"</span>)</code></pre>
+        </div>
+
+        <h2>Python Objects → Pandas Lineage</h2>
+        <p>
+          Wrap native Python lists or dictionaries using <code>why.track()</code>:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>python_to_pandas.py</span>
+            <button class="copy-btn" aria-label="Copy Python to Pandas example">Copy</button>
+          </div>
+          <pre><code>raw = [<span class="syn-str">"10"</span>, <span class="syn-str">"20"</span>, <span class="syn-str">"30"</span>]
+
+<span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    tracked = why.<span class="syn-fn">track</span>(raw)
+    df = why.<span class="syn-fn">to_dataframe</span>([{<span class="syn-str">"val"</span>: x} <span class="syn-kw">for</span> x <span class="syn-kw">in</span> tracked])
+    df[<span class="syn-str">"num"</span>] = df[<span class="syn-str">"val"</span>].<span class="syn-fn">astype</span>(<span class="syn-fn">int</span>) * <span class="syn-num">2</span>
+
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"num"</span>)</code></pre>
+        </div>
+
+        <h2>Source-Specific Metadata Comparison</h2>
+        <div style="overflow-x: auto; margin-bottom: 2rem;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--wv-border); background: var(--wv-card-bg);">
+                <th style="padding: 0.75rem 1rem;">Source Type</th>
+                <th style="padding: 0.75rem 1rem;">Loader API</th>
+                <th style="padding: 0.75rem 1rem;">Location / Identifier</th>
+                <th style="padding: 0.75rem 1rem;">Key / Position Format</th>
+                <th style="padding: 0.75rem 1rem;">Special Features</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">HTTP API</td>
+                <td style="padding: 0.6rem 1rem;"><code>why.get()</code></td>
+                <td style="padding: 0.6rem 1rem;">Sanitized URL</td>
+                <td style="padding: 0.6rem 1rem;">JSON path (<code>$[0].field</code>)</td>
+                <td style="padding: 0.6rem 1rem;">Masks sensitive URL query parameters (e.g. <code>token=REDACTED</code>), records status code &amp; headers.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">CSV File</td>
+                <td style="padding: 0.6rem 1rem;"><code>why.load_csv()</code></td>
+                <td style="padding: 0.6rem 1rem;">File path</td>
+                <td style="padding: 0.6rem 1rem;">1-based row, column name</td>
+                <td style="padding: 0.6rem 1rem;">Tracks file creation time, row index, and header names.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">JSON File</td>
+                <td style="padding: 0.6rem 1rem;"><code>why.load_json()</code></td>
+                <td style="padding: 0.6rem 1rem;">File path</td>
+                <td style="padding: 0.6rem 1rem;">JSON path (<code>$.path.key</code>)</td>
+                <td style="padding: 0.6rem 1rem;">Handles nested dicts and lists.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">TXT File</td>
+                <td style="padding: 0.6rem 1rem;"><code>why.load_txt()</code></td>
+                <td style="padding: 0.6rem 1rem;">File path</td>
+                <td style="padding: 0.6rem 1rem;">1-based line number</td>
+                <td style="padding: 0.6rem 1rem;">Line-by-line provenance tracking.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">Python Objects</td>
+                <td style="padding: 0.6rem 1rem;"><code>why.track()</code></td>
+                <td style="padding: 0.6rem 1rem;">Memory reference</td>
+                <td style="padding: 0.6rem 1rem;">List index / Dict key</td>
+                <td style="padding: 0.6rem 1rem;">Tracks mutations in standard Python data structures.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Explanation Modes (mode="full" | "short" | "json")</h2>
+        <p>
+          When inspecting cross-source lineage, select the output format that best fits your workflow:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Explanation Modes</span>
+            <button class="copy-btn" aria-label="Copy explanation modes code">Copy</button>
+          </div>
+          <pre><code><span class="syn-cm"># Full human-readable trace (default)</span>
+why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"total"</span>, mode=<span class="syn-str">"full"</span>)
+
+<span class="syn-cm"># Concise one-line origin summary</span>
+why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"total"</span>, mode=<span class="syn-str">"short"</span>)
+
+<span class="syn-cm"># Machine-readable JSON dictionary for audit logging / CI</span>
+data_dict = why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"total"</span>, mode=<span class="syn-str">"json"</span>)</code></pre>
+        </div>
+
+        <h2>Boundaries &amp; Limitations</h2>
+        <p>
+          To maintain accurate lineage, keep these operational boundaries in mind:
+        </p>
+        <ul style="margin-bottom: 2rem; padding-left: 1.25rem; line-height: 1.7;">
+          <li><strong>Direct pandas readers bypass WhyValue:</strong> Standard <code>pd.read_csv()</code> or <code>pd.read_json()</code> do not pass through WhyValue adapters. Use <code>why.load_csv()</code> + <code>why.to_dataframe()</code> to capture source origin metadata.</li>
+          <li><strong>Unmonitored pandas functions:</strong> Pandas operations executed outside an active <code>why.watch()</code> block will produce unmonitored DataFrames without provenance events.</li>
+          <li><strong>Data type requirements:</strong> <code>why.to_dataframe()</code> requires a <code>TrackedList</code> or <code>TrackedDict</code>. Untracked lists or dicts must first be wrapped with <code>why.track()</code> or loaded via WhyValue loader functions.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
+

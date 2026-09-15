@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watching Data — WhyValue</title>
+  <meta name="description" content="Learn how why.watch(), why.stop(), and why.is_watching() control provenance tracking sessions in WhyValue.">
+  <meta name="theme-color" content="#0b0f19">
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('whyvalue_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="./js/main.js" defer></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header-wrapper">
+    <div class="header-container">
+      <a href="./index.html" class="brand-link" aria-label="WhyValue Homepage">
+        <svg class="logo-w-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wvHeaderGradWD" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00B0FF" />
+              <stop offset="50%" stop-color="#1A73E8" />
+              <stop offset="100%" stop-color="#7C4DFF" />
+            </linearGradient>
+          </defs>
+          <path d="M15 25 L35 75 L50 45 L65 75 L85 25" stroke="url(#wvHeaderGradWD)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <div class="brand-text-container">
+          <span class="brand-title">Why<span class="highlight">Value</span></span>
+          <span class="brand-tagline">Ask your data why</span>
+        </div>
+      </a>
+
+      <nav class="nav-right" aria-label="Main Navigation">
+        <a href="./getting-started.html" class="header-nav-link active">Documentation</a>
+        <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://pypi.org/project/whyvalue/" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm-1.5 3.5l7.5 4.38-3 1.75-7.5-4.38 3-1.75zm-6 4.38l6 3.5v7l-6-3.5v-7zm15 7l-6 3.5v-7l6-3.5v7z"/>
+          </svg>
+          <span>PyPI</span>
+        </a>
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="sidebar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sidebar Mobile Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" aria-label="Documentation Sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-list">
+          <li><a href="./getting-started.html" class="sidebar-link">Introduction</a></li>
+          <li><a href="./installation.html" class="sidebar-link">Installation</a></li>
+          <li><a href="./quick-start.html" class="sidebar-link">Quick Start</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Core Concepts</div>
+        <ul class="sidebar-list">
+          <li><a href="./watching-data.html" class="sidebar-link active">Watching Data</a></li>
+          <li><a href="./explain.html" class="sidebar-link">explain()</a></li>
+          <li><a href="./trace.html" class="sidebar-link">trace()</a></li>
+          <li><a href="./snapshots.html" class="sidebar-link">Snapshots</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Python</div>
+        <ul class="sidebar-list">
+          <li><a href="./tracked-lists.html" class="sidebar-link">Tracked Lists</a></li>
+          <li><a href="./tracked-dicts.html" class="sidebar-link">Tracked Dicts</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Data Sources</div>
+        <ul class="sidebar-list">
+          <li><a href="./json.html" class="sidebar-link">JSON Provenance</a></li>
+          <li><a href="./csv.html" class="sidebar-link">CSV Provenance</a></li>
+          <li><a href="./txt.html" class="sidebar-link">TXT Provenance</a></li>
+          <li><a href="./http.html" class="sidebar-link">HTTP APIs</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Pandas</div>
+        <ul class="sidebar-list">
+          <li><a href="./pandas.html" class="sidebar-link">Pandas Integration</a></li>
+          <li><a href="./cross-source-lineage.html" class="sidebar-link">Cross-Source Lineage</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Reference</div>
+        <ul class="sidebar-list">
+          <li><a href="./api-reference.html" class="sidebar-link">API Reference</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section>
+        <h1>Watching Data</h1>
+        <p>
+          WhyValue records provenance event history only when a watch session is active.
+        </p>
+
+        <div style="background: rgba(2, 132, 199, 0.08); border-left: 3px solid var(--wv-accent-cyan); padding: 1rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 2rem;">
+          <strong style="color: var(--wv-text-primary);">Important:</strong> WhyValue cannot explain transformations that occurred before a watch session was started.
+        </div>
+
+        <h2>Supported Session Styles</h2>
+
+        <h3>1. Context Manager (Recommended)</h3>
+        <p>
+          The recommended approach is using Python's <code>with</code> context manager syntax:
+        </p>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Context Manager Syntax</span>
+            <button class="copy-btn" aria-label="Copy context manager code">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">import</span> whyvalue <span class="syn-kw">as</span> why
+
+<span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    data = why.<span class="syn-fn">track</span>({<span class="syn-str">"status"</span>: <span class="syn-str">"pending"</span>})
+    data[<span class="syn-str">"status"</span>] = <span class="syn-str">"approved"</span>
+    why.<span class="syn-fn">explain</span>(data, key=<span class="syn-str">"status"</span>)</code></pre>
+        </div>
+        <p>
+          <strong>Why it is recommended:</strong> Exiting the <code>with</code> block automatically cleans up and stops tracking, even if an unhandled exception occurs inside the block.
+        </p>
+
+        <h3>2. Manual Session</h3>
+        <p>
+          You can also manually start and stop watch sessions:
+        </p>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Manual Session Syntax</span>
+            <button class="copy-btn" aria-label="Copy manual session code">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">import</span> whyvalue <span class="syn-kw">as</span> why
+
+why.<span class="syn-fn">watch</span>()
+
+<span class="syn-cm"># Operations performed while active...</span>
+
+why.<span class="syn-fn">stop</span>()</code></pre>
+        </div>
+
+        <h2>Checking Watch State</h2>
+        <p>
+          Use <code>why.is_watching()</code> to query whether a watch session is currently active:
+        </p>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Check Active Status</span>
+            <button class="copy-btn" aria-label="Copy is_watching code">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">import</span> whyvalue <span class="syn-kw">as</span> why
+
+<span class="syn-fn">print</span>(why.<span class="syn-fn">is_watching</span>())  <span class="syn-cm"># False</span>
+
+<span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    <span class="syn-fn">print</span>(why.<span class="syn-fn">is_watching</span>())  <span class="syn-cm"># True</span>
+
+<span class="syn-fn">print</span>(why.<span class="syn-fn">is_watching</span>())  <span class="syn-cm"># False</span></code></pre>
+        </div>
+
+        <h2>What Happens When Watching Starts?</h2>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--wv-text-secondary);">
+          <li>The global provenance history buffer is reset for new outer sessions.</li>
+          <li>Pandas adapter hooks and monkey patches are enabled.</li>
+          <li>Data loading wrappers (JSON, CSV, TXT, HTTP) begin attaching source metadata.</li>
+        </ul>
+
+        <h2>What Happens When Watching Stops?</h2>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--wv-text-secondary);">
+          <li>Pandas adapter patches are restored to original method signatures.</li>
+          <li>The active watching flag is turned off.</li>
+        </ul>
+
+        <h2>Nested Watch Sessions</h2>
+        <p>
+          If <code>why.watch()</code> is called while a session is already active, WhyValue increments an internal depth counter and prints <code>"WhyValue is already watching."</code>. Exiting a nested context manager or calling <code>why.stop(force=False)</code> decrements the depth counter without stopping tracking until the outermost session exits. Calling <code>why.stop(force=True)</code> or <code>why.stop()</code> immediately terminates tracking regardless of depth.
+        </p>
+
+        <div style="background: rgba(124, 77, 255, 0.08); border-left: 3px solid #7C4DFF; padding: 1rem 1.25rem; border-radius: var(--radius-sm); margin-top: 2rem;">
+          <strong style="color: var(--wv-text-primary);">Callout:</strong> WhyValue only explains transformations it actually observed while watching was active.
+        </div>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
+

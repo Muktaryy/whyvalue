@@ -13,7 +13,8 @@ authors = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "pandas>=2.0"
+    "pandas>=2.0",
+    "requests>=2.31",
 ]
 keywords = [
     "pandas",

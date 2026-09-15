@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pandas Integration — WhyValue</title>
+  <meta name="description" content="Learn how WhyValue tracks pandas operations, arithmetic, filtering, missing data, column transformations, groupby, and merge.">
+  <meta name="theme-color" content="#0b0f19">
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('whyvalue_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="./js/main.js" defer></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header-wrapper">
+    <div class="header-container">
+      <a href="./index.html" class="brand-link" aria-label="WhyValue Homepage">
+        <svg class="logo-w-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wvHeaderGradPd" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00B0FF" />
+              <stop offset="50%" stop-color="#1A73E8" />
+              <stop offset="100%" stop-color="#7C4DFF" />
+            </linearGradient>
+          </defs>
+          <path d="M15 25 L35 75 L50 45 L65 75 L85 25" stroke="url(#wvHeaderGradPd)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <div class="brand-text-container">
+          <span class="brand-title">Why<span class="highlight">Value</span></span>
+          <span class="brand-tagline">Ask your data why</span>
+        </div>
+      </a>
+
+      <nav class="nav-right" aria-label="Main Navigation">
+        <a href="./getting-started.html" class="header-nav-link active">Documentation</a>
+        <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://pypi.org/project/whyvalue/" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm-1.5 3.5l7.5 4.38-3 1.75-7.5-4.38 3-1.75zm-6 4.38l6 3.5v7l-6-3.5v-7zm15 7l-6 3.5v-7l6-3.5v7z"/>
+          </svg>
+          <span>PyPI</span>
+        </a>
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="sidebar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sidebar Mobile Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" aria-label="Documentation Sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-list">
+          <li><a href="./getting-started.html" class="sidebar-link">Introduction</a></li>
+          <li><a href="./installation.html" class="sidebar-link">Installation</a></li>
+          <li><a href="./quick-start.html" class="sidebar-link">Quick Start</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Core Concepts</div>
+        <ul class="sidebar-list">
+          <li><a href="./watching-data.html" class="sidebar-link">Watching Data</a></li>
+          <li><a href="./explain.html" class="sidebar-link">explain()</a></li>
+          <li><a href="./trace.html" class="sidebar-link">trace()</a></li>
+          <li><a href="./snapshots.html" class="sidebar-link">Snapshots</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Python</div>
+        <ul class="sidebar-list">
+          <li><a href="./tracked-lists.html" class="sidebar-link">Tracked Lists</a></li>
+          <li><a href="./tracked-dicts.html" class="sidebar-link">Tracked Dicts</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Data Sources</div>
+        <ul class="sidebar-list">
+          <li><a href="./json.html" class="sidebar-link">JSON Provenance</a></li>
+          <li><a href="./csv.html" class="sidebar-link">CSV Provenance</a></li>
+          <li><a href="./txt.html" class="sidebar-link">TXT Provenance</a></li>
+          <li><a href="./http.html" class="sidebar-link">HTTP APIs</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Pandas</div>
+        <ul class="sidebar-list">
+          <li><a href="./pandas.html" class="sidebar-link active">Pandas Integration</a></li>
+          <li><a href="./cross-source-lineage.html" class="sidebar-link">Cross-Source Lineage</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Reference</div>
+        <ul class="sidebar-list">
+          <li><a href="./api-reference.html" class="sidebar-link">API Reference</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section>
+        <h1>Pandas Integration</h1>
+        <p>
+          WhyValue does not replace pandas. You write standard, idiomatic pandas code, while WhyValue observes supported operations during an active watch session.
+        </p>
+
+        <h2>Mental Model</h2>
+        <div style="background: var(--wv-code-bg); border: 1px solid var(--wv-code-border); padding: 1rem 1.25rem; border-radius: var(--radius-md); font-family: var(--font-mono); color: var(--wv-accent-cyan); text-align: center; margin-bottom: 2rem;">
+          pandas operation &nbsp;→&nbsp; provenance event &nbsp;→&nbsp; final value &nbsp;→&nbsp; why.explain()
+        </div>
+
+        <h2>Basic Example</h2>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>pandas_basic.py</span>
+            <button class="copy-btn" aria-label="Copy pandas basic example">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">import</span> pandas <span class="syn-kw">as</span> pd
+<span class="syn-kw">import</span> whyvalue <span class="syn-kw">as</span> why
+
+df = pd.DataFrame({
+    <span class="syn-str">"price"</span>: [<span class="syn-num">100</span>, <span class="syn-num">200</span>],
+    <span class="syn-str">"quantity"</span>: [<span class="syn-num">2</span>, <span class="syn-num">3</span>]
+})
+
+<span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    df[<span class="syn-str">"total"</span>] = df[<span class="syn-str">"price"</span>] * df[<span class="syn-str">"quantity"</span>]
+
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">1</span>, column=<span class="syn-str">"total"</span>)</code></pre>
+        </div>
+
+        <p>Representative output:</p>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Console Output</span>
+            <button class="copy-btn" aria-label="Copy output">Copy</button>
+          </div>
+          <pre><code>Why is total = 600?
+
+price = 200
+quantity = 3
+
+200 × 3
+→ total = 600</code></pre>
+        </div>
+
+        <h2>Supported Operations in v0.2</h2>
+
+        <div style="overflow-x: auto; margin-bottom: 2rem;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--wv-border); background: var(--wv-card-bg);">
+                <th style="padding: 0.75rem 1rem;">Category</th>
+                <th style="padding: 0.75rem 1rem;">Supported Operations</th>
+                <th style="padding: 0.75rem 1rem;">Notes &amp; Scope</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">Arithmetic</td>
+                <td style="padding: 0.6rem 1rem;"><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></td>
+                <td style="padding: 0.6rem 1rem;">Column vs Column, Column vs Scalar, and reverse scalar operations (e.g. <code>100 / df["col"]</code>).</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">Filtering</td>
+                <td style="padding: 0.6rem 1rem;"><code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>==</code>, <code>!=</code>, <code>&amp;</code>, <code>|</code></td>
+                <td style="padding: 0.6rem 1rem;">Comparison filters and combined boolean conditions. Use <code>explain_removed()</code> to explain why rows disappeared.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">Missing Data</td>
+                <td style="padding: 0.6rem 1rem;"><code>fillna()</code>, <code>dropna(subset=[...])</code></td>
+                <td style="padding: 0.6rem 1rem;"><code>fillna</code> attaches before/after state when <code>snapshot=True</code>. <code>dropna</code> records removed rows for target subset columns.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">Transformations</td>
+                <td style="padding: 0.6rem 1rem;"><code>astype()</code>, <code>round()</code>, <code>rename()</code>, <code>map()</code>, <code>apply()</code></td>
+                <td style="padding: 0.6rem 1rem;"><code>map()</code> supports dictionary mappings. <code>apply()</code> tracks function names/labels (e.g. <code>&lt;lambda&gt;</code> or <code>func.__name__</code>).</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">Merge</td>
+                <td style="padding: 0.6rem 1rem;"><code>DataFrame.merge()</code></td>
+                <td style="padding: 0.6rem 1rem;">Basic merge tracking (records left/right DataFrame identity, <code>how</code>, and <code>on</code> keys).</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;">GroupBy</td>
+                <td style="padding: 0.6rem 1rem;"><code>SeriesGroupBy</code>: <code>sum()</code>, <code>mean()</code>, <code>count()</code>, <code>min()</code>, <code>max()</code></td>
+                <td style="padding: 0.6rem 1rem;">Targeted <code>SeriesGroupBy</code> aggregations on a single column (e.g. <code>df.groupby("cat")["sales"].sum()</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Explaining Values &amp; Sequential History</h2>
+        <p>
+          Call <code>why.explain(df, row, column)</code> to inspect why a value exists. <code>row</code> is the 0-indexed row position in the DataFrame, and <code>column</code> is the target column name.
+        </p>
+        <p>
+          When a column undergoes multiple sequential transformations (e.g. <code>fillna(0)</code> → <code>astype(float)</code> → <code>round(1)</code>), WhyValue prints the chronological event chain:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>Sequential History Example</span>
+            <button class="copy-btn" aria-label="Copy sequential code">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    df[<span class="syn-str">"val"</span>] = df[<span class="syn-str">"val"</span>].<span class="syn-fn">fillna</span>(<span class="syn-num">0</span>)
+    df[<span class="syn-str">"val"</span>] = df[<span class="syn-str">"val"</span>].<span class="syn-fn">astype</span>(<span class="syn-fn">float</span>)
+    df[<span class="syn-str">"val"</span>] = df[<span class="syn-str">"val"</span>].<span class="syn-fn">round</span>(<span class="syn-num">1</span>)
+
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"val"</span>)</code></pre>
+        </div>
+
+        <h2>Explaining Removed Rows (explain_removed)</h2>
+        <p>
+          To understand why a row was excluded by a <code>dropna()</code> step or boolean filter condition, use <code>why.explain_removed(df, row)</code>:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>explain_removed_example.py</span>
+            <button class="copy-btn" aria-label="Copy explain_removed code">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    df = pd.DataFrame({<span class="syn-str">"age"</span>: [<span class="syn-num">17</span>, <span class="syn-num">20</span>, <span class="syn-num">30</span>], <span class="syn-str">"salary"</span>: [<span class="syn-num">5000</span>, <span class="syn-num">2500</span>, <span class="syn-num">4500</span>]})
+    df = df[(df[<span class="syn-str">"age"</span>] &gt;= <span class="syn-num">18</span>) &amp; (df[<span class="syn-str">"salary"</span>] &gt; <span class="syn-num">3000</span>)]
+
+    why.<span class="syn-fn">explain_removed</span>(df, row=<span class="syn-num">1</span>)</code></pre>
+        </div>
+
+        <p>Output printed to console:</p>
+        <div class="code-block-wrapper">
+          <pre><code>Why was row 1 removed?
+
+Combined filter (AND):
+
+age >= 18
+salary > 3000
+
+Row removed because the row did not satisfy all conditions.</code></pre>
+        </div>
+
+        <h2>GroupBy &amp; Merge</h2>
+        <p>
+          For SeriesGroupBy aggregations (e.g. <code>res = df.groupby("category")["sales"].sum()</code>), call <code>why.explain(res, row="A")</code> to inspect the aggregation function and grouping key value. For DataFrame merges, <code>why.explain(res, row=0, column="col")</code> details the join type (`left`, `inner`, etc.) and key names.
+        </p>
+
+        <p style="margin-top: 1.5rem;">
+          Next: Learn about <a href="./cross-source-lineage.html" style="color: var(--wv-accent-cyan);">Cross-Source Lineage</a>.
+        </p>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>

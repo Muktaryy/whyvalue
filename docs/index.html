@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhyValue — Ask your data why</title>
+  <meta name="description" content="WhyValue is a developer-first Python library for tracking data transformations and explaining why values have the values they do.">
+  <meta name="theme-color" content="#0b0f19">
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('whyvalue_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header-wrapper">
+    <div class="header-container">
+      <a href="./index.html" class="brand-link" aria-label="WhyValue Homepage">
+        <svg class="logo-w-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wvHeaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00B0FF" />
+              <stop offset="50%" stop-color="#1A73E8" />
+              <stop offset="100%" stop-color="#7C4DFF" />
+            </linearGradient>
+          </defs>
+          <path d="M15 25 L35 75 L50 45 L65 75 L85 25" stroke="url(#wvHeaderGrad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <div class="brand-text-container">
+          <span class="brand-title">Why<span class="highlight">Value</span></span>
+          <span class="brand-tagline">Ask your data why</span>
+        </div>
+      </a>
+
+      <nav class="nav-right" aria-label="Main Navigation">
+        <a href="./getting-started.html" class="header-nav-link">Documentation</a>
+        <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://pypi.org/project/whyvalue/" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm-1.5 3.5l7.5 4.38-3 1.75-7.5-4.38 3-1.75zm-6 4.38l6 3.5v7l-6-3.5v-7zm15 7l-6 3.5v-7l6-3.5v7z"/>
+          </svg>
+          <span>PyPI</span>
+        </a>
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="sidebar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sidebar Mobile Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" aria-label="Documentation Sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-list">
+          <li><a href="./getting-started.html" class="sidebar-link">Introduction</a></li>
+          <li><a href="./installation.html" class="sidebar-link">Installation</a></li>
+          <li><a href="./quick-start.html" class="sidebar-link">Quick Start</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Core Concepts</div>
+        <ul class="sidebar-list">
+          <li><a href="./watching-data.html" class="sidebar-link">Watching Data</a></li>
+          <li><a href="./explain.html" class="sidebar-link">explain()</a></li>
+          <li><a href="./trace.html" class="sidebar-link">trace()</a></li>
+          <li><a href="./snapshots.html" class="sidebar-link">Snapshots</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Python</div>
+        <ul class="sidebar-list">
+          <li><a href="./tracked-lists.html" class="sidebar-link">Tracked Lists</a></li>
+          <li><a href="./tracked-dicts.html" class="sidebar-link">Tracked Dicts</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Data Sources</div>
+        <ul class="sidebar-list">
+          <li><a href="./json.html" class="sidebar-link">JSON Provenance</a></li>
+          <li><a href="./csv.html" class="sidebar-link">CSV Provenance</a></li>
+          <li><a href="./txt.html" class="sidebar-link">TXT Provenance</a></li>
+          <li><a href="./http.html" class="sidebar-link">HTTP APIs</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Pandas</div>
+        <ul class="sidebar-list">
+          <li><a href="./pandas.html" class="sidebar-link">Pandas Integration</a></li>
+          <li><a href="./cross-source-lineage.html" class="sidebar-link">Cross-Source Lineage</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Reference</div>
+        <ul class="sidebar-list">
+          <li><a href="./api-reference.html" class="sidebar-link">API Reference</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-brand">
+          <svg class="hero-logo-w-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="wvHeroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00B0FF" />
+                <stop offset="50%" stop-color="#1A73E8" />
+                <stop offset="100%" stop-color="#7C4DFF" />
+              </linearGradient>
+            </defs>
+            <path d="M15 25 L35 75 L50 45 L65 75 L85 25" stroke="url(#wvHeroGrad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="hero-brand-text">
+            <h1 class="hero-brand-title">Why<span class="highlight">Value</span></h1>
+            <span class="hero-brand-sub">ASK YOUR DATA WHY</span>
+          </div>
+        </div>
+
+        <p class="hero-tagline">
+          Track the journey. Trace the changes. <span class="tagline-highlight">Explain every value.</span>
+        </p>
+
+        <p class="hero-description">
+          WhyValue is a developer-first Python library for tracking data transformations and explaining why values have the values they do across Python containers, files, HTTP APIs, and pandas.
+        </p>
+
+        <div class="cta-group">
+          <a href="./getting-started.html" class="btn btn-primary">
+            Get Started
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            View on GitHub
+          </a>
+        </div>
+
+        <div class="install-box">
+          <div class="install-cmd">
+            <span class="install-prompt">$</span> pip install whyvalue
+          </div>
+          <button class="copy-btn" aria-label="Copy installation command">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
+      </section>
+
+      <!-- Why WhyValue Section -->
+      <section>
+        <h2>Why WhyValue?</h2>
+        <p>
+          In traditional data pipelines and analytical scripts, you can inspect final values:
+        </p>
+        <div class="code-block-wrapper">
+          <div class="code-header">Python</div>
+          <pre><code><span class="syn-num">total</span> = <span class="syn-num">600</span></code></pre>
+        </div>
+        <p>
+          But when debugging unexpected data issues, engineers need to answer:
+        </p>
+        <ul>
+          <li><strong>Where did 600 come from?</strong> Which raw row or file line generated it?</li>
+          <li><strong>Which values produced it?</strong> Did a filter or fillna alter the calculation?</li>
+          <li><strong>Which transformations changed it?</strong> What step modified the field in transit?</li>
+          <li><strong>Did the value originate from CSV, JSON, or an HTTP API?</strong> Where is the true source of truth?</li>
+        </ul>
+        <p>
+          WhyValue preserves that journey automatically without invasively altering standard Python or pandas APIs.
+        </p>
+      </section>
+
+      <!-- Real Audited v0.2 Code Example -->
+      <section>
+        <h2>Core Example</h2>
+        <p>
+          WhyValue follows data lineage across library and format boundaries — from raw files into tracked containers and pandas DataFrames:
+        </p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span>example.py</span>
+            <button class="copy-btn" aria-label="Copy example code">Copy</button>
+          </div>
+          <pre><code><span class="syn-kw">import</span> whyvalue <span class="syn-kw">as</span> why
+
+<span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>(snapshot=<span class="syn-num">True</span>):
+    data = why.<span class="syn-fn">load_csv</span>(<span class="syn-str">"sales.csv"</span>)
+    df = why.<span class="syn-fn">to_dataframe</span>(data)
+
+    df[<span class="syn-str">"total"</span>] = df[<span class="syn-str">"price"</span>] * df[<span class="syn-str">"quantity"</span>]
+
+    why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"total"</span>)</code></pre>
+        </div>
+
+        <!-- Conceptual Flow Diagram -->
+        <div class="diagram-box">
+          <div class="diagram-step">CSV File / Source</div>
+          <div class="diagram-arrow">↓</div>
+          <div class="diagram-step">Tracked Python Container</div>
+          <div class="diagram-arrow">↓</div>
+          <div class="diagram-step">pandas DataFrame</div>
+          <div class="diagram-arrow">↓</div>
+          <div class="diagram-step">Column Transformation</div>
+          <div class="diagram-arrow">↓</div>
+          <div class="diagram-step">why.explain()</div>
+        </div>
+      </section>
+
+      <!-- Features Supported in v0.2 -->
+      <section>
+        <h2>Supported in v0.2</h2>
+        <p>WhyValue v0.2 includes full provenance tracking across these feature areas:</p>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-card-icon">🐍</div>
+            <div class="feature-card-title">Python Lists & Dicts</div>
+            <div class="feature-card-desc">Track mutation history (`append`, `pop`, `setitem`) with `TrackedList` and `TrackedDict`.</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">📄</div>
+            <div class="feature-card-title">JSON, CSV & TXT</div>
+            <div class="feature-card-desc">Load files with precise source origin tracking (file paths, row numbers, line counts, JSON paths).</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">🌐</div>
+            <div class="feature-card-title">HTTP APIs</div>
+            <div class="feature-card-desc">Capture REST API response lineage with automatic credential and query param redaction.</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">🐼</div>
+            <div class="feature-card-title">pandas Operations</div>
+            <div class="feature-card-desc">Track column arithmetic, `fillna`, `astype`, filtering, groupbys, and merges.</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">🔗</div>
+            <div class="feature-card-title">Cross-Source Lineage</div>
+            <div class="feature-card-desc">Bridge files and API data seamlessly into DataFrames using `why.to_dataframe()`.</div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">🔍</div>
+            <div class="feature-card-title">Flexible Explanations</div>
+            <div class="feature-card-desc">Inspect lineage in `full` human-readable, `short` summary, or `json` programmatic modes.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="docs-footer">
+    <div class="footer-container">
+      <div>WhyValue — Ask your data why.</div>
+      <div class="footer-links">
+        <a href="./getting-started.html">Documentation</a>
+        <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://pypi.org/project/whyvalue/" target="_blank" rel="noopener noreferrer">PyPI</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./js/main.js"></script>
+</body>
+</html>

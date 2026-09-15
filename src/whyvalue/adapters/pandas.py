@@ -1,9 +1,80 @@
+import copy
 import uuid
 
 import pandas as pd
 from pandas.core.groupby.generic import DataFrameGroupBy, SeriesGroupBy
 
 from ..history import history
+from ..provenance import ProvenanceEvent
+from .python_list import TrackedList
+from .python_dict import TrackedDict
+
+
+def to_dataframe(data):
+    """Convert a WhyValue tracked container to a pandas DataFrame with cross-source provenance."""
+    from ..core import is_watching
+
+    if not is_watching():
+        raise RuntimeError(
+            "why.to_dataframe() requires an active WhyValue watch session."
+        )
+
+    if not isinstance(data, (TrackedList, TrackedDict)) and not hasattr(
+        data, "_whyvalue_id"
+    ):
+        raise TypeError(
+            f"why.to_dataframe() expects a tracked object (TrackedList or TrackedDict), got {type(data).__name__}."
+        )
+
+    df = pd.DataFrame(list(data) if isinstance(data, (list, TrackedList)) else data)
+
+    # Ensure fresh DataFrame identity
+    df_id = uuid.uuid4().hex
+    df.attrs["_whyvalue_id"] = df_id
+
+    source_id = getattr(data, "_whyvalue_id", None)
+    source_type = (
+        "list"
+        if isinstance(data, (list, TrackedList))
+        else ("dict" if isinstance(data, (dict, TrackedDict)) else "object")
+    )
+
+    source_meta = getattr(data, "_whyvalue_source", None)
+    if not source_meta:
+        source_meta = {
+            "source_type": source_type,
+            "source_format": "Python object",
+        }
+
+    df.attrs["_whyvalue_source"] = copy.deepcopy(source_meta)
+    if source_id:
+        df.attrs["_whyvalue_source_id"] = source_id
+
+    history.add(
+        ProvenanceEvent(
+            event_type="to_dataframe",
+            object_id=df_id,
+            dataframe_id=df_id,
+            source_id=source_id,
+            inputs={
+                "source_id": source_id,
+                "source_object_type": source_type,
+                "columns": list(df.columns),
+                "row_count": len(df),
+            },
+            metadata={
+                "operation": "to_dataframe",
+                "source_id": source_id,
+                "dataframe_id": df_id,
+                "source_object_type": source_type,
+                "columns": list(df.columns),
+                "row_count": len(df),
+                "source_metadata": copy.deepcopy(source_meta),
+            },
+        )
+    )
+
+    return df
 
 
 _original_add = None
@@ -68,7 +139,7 @@ def _add_filter_info(result, series, operator, value):
     return result
 
 
-def enable():
+def enable(snapshot=False):
     global _original_add
     global _original_radd
     global _original_mul
@@ -106,6 +177,9 @@ def enable():
     global _original_setitem
     global _original_getitem
     global _enabled
+    global _snapshot_enabled
+
+    _snapshot_enabled = bool(snapshot)
 
     if _enabled:
         return
@@ -478,13 +552,19 @@ def enable():
     def whyvalue_fillna(series, value=None, *args, **kwargs):
         missing_rows = series[series.isna()].index.tolist()
 
+        before_snapshot = series.copy(deep=True) if _snapshot_enabled else None
+
         result = _original_fillna(series, value=value, *args, **kwargs)
+
+        after_snapshot = result.copy(deep=True) if _snapshot_enabled else None
 
         result.attrs["_whyvalue"] = {
             "operation": "fillna",
             "source": series.name,
             "value": value,
             "missing_rows": missing_rows,
+            "before_value": before_snapshot,
+            "after_value": after_snapshot,
         }
 
         return result
@@ -794,17 +874,21 @@ def enable():
 
             if info:
                 if info["operation"] == "fillna":
-                    history.add(
-                        {
-                            "type": "column_filled",
-                            "dataframe_id": dataframe_id,
-                            "column": key,
-                            "source": info["source"],
-                            "operation": "fillna",
-                            "value": info["value"],
-                            "missing_rows": info["missing_rows"],
-                        }
-                    )
+                    event_data = {
+                        "type": "column_filled",
+                        "dataframe_id": dataframe_id,
+                        "column": key,
+                        "source": info["source"],
+                        "operation": "fillna",
+                        "value": info["value"],
+                        "missing_rows": info["missing_rows"],
+                    }
+                    if info.get("before_value") is not None:
+                        event_data["before_value"] = info["before_value"]
+                    if info.get("after_value") is not None:
+                        event_data["after_value"] = info["after_value"]
+
+                    history.add(event_data)
 
                 elif info["operation"] == "astype":
                     history.add(

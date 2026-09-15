@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference — WhyValue</title>
+  <meta name="description" content="Complete public API reference for WhyValue v0.2, including watch sessions, tracking, explanation functions, data source loaders, HTTP API helper, and pandas bridge.">
+  <meta name="theme-color" content="#0b0f19">
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('whyvalue_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="./js/main.js" defer></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header-wrapper">
+    <div class="header-container">
+      <a href="./index.html" class="brand-link" aria-label="WhyValue Homepage">
+        <svg class="logo-w-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wvHeaderGradApi" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00B0FF" />
+              <stop offset="50%" stop-color="#1A73E8" />
+              <stop offset="100%" stop-color="#7C4DFF" />
+            </linearGradient>
+          </defs>
+          <path d="M15 25 L35 75 L50 45 L65 75 L85 25" stroke="url(#wvHeaderGradApi)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <div class="brand-text-container">
+          <span class="brand-title">Why<span class="highlight">Value</span></span>
+          <span class="brand-tagline">Ask your data why</span>
+        </div>
+      </a>
+
+      <nav class="nav-right" aria-label="Main Navigation">
+        <a href="./getting-started.html" class="header-nav-link active">Documentation</a>
+        <a href="https://github.com/Muktaryy/whyvalue" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://pypi.org/project/whyvalue/" target="_blank" rel="noopener noreferrer" class="header-nav-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm-1.5 3.5l7.5 4.38-3 1.75-7.5-4.38 3-1.75zm-6 4.38l6 3.5v7l-6-3.5v-7zm15 7l-6 3.5v-7l6-3.5v7z"/>
+          </svg>
+          <span>PyPI</span>
+        </a>
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Switch to light mode" title="Toggle theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button id="menu-toggle" class="menu-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false" aria-controls="sidebar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Sidebar Mobile Overlay -->
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- Layout -->
+  <div class="docs-layout">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" aria-label="Documentation Sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-list">
+          <li><a href="./getting-started.html" class="sidebar-link">Introduction</a></li>
+          <li><a href="./installation.html" class="sidebar-link">Installation</a></li>
+          <li><a href="./quick-start.html" class="sidebar-link">Quick Start</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Core Concepts</div>
+        <ul class="sidebar-list">
+          <li><a href="./watching-data.html" class="sidebar-link">Watching Data</a></li>
+          <li><a href="./explain.html" class="sidebar-link">explain()</a></li>
+          <li><a href="./trace.html" class="sidebar-link">trace()</a></li>
+          <li><a href="./snapshots.html" class="sidebar-link">Snapshots</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Python</div>
+        <ul class="sidebar-list">
+          <li><a href="./tracked-lists.html" class="sidebar-link">Tracked Lists</a></li>
+          <li><a href="./tracked-dicts.html" class="sidebar-link">Tracked Dicts</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Data Sources</div>
+        <ul class="sidebar-list">
+          <li><a href="./json.html" class="sidebar-link">JSON Provenance</a></li>
+          <li><a href="./csv.html" class="sidebar-link">CSV Provenance</a></li>
+          <li><a href="./txt.html" class="sidebar-link">TXT Provenance</a></li>
+          <li><a href="./http.html" class="sidebar-link">HTTP APIs</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Pandas</div>
+        <ul class="sidebar-list">
+          <li><a href="./pandas.html" class="sidebar-link">Pandas Integration</a></li>
+          <li><a href="./cross-source-lineage.html" class="sidebar-link">Cross-Source Lineage</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-title">Reference</div>
+        <ul class="sidebar-list">
+          <li><a href="./api-reference.html" class="sidebar-link active">API Reference</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section>
+        <h1>API Reference</h1>
+        <p>
+          Complete technical reference for the public API exported by <code>whyvalue</code> v0.2.0.
+        </p>
+
+        <!-- Public API Index -->
+        <div style="background: var(--wv-card-bg); border: 1px solid var(--wv-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin: 1.5rem 0 2.5rem 0;">
+          <h2 style="margin-top: 0; font-size: 1.1rem; border-bottom: 1px solid var(--wv-border); padding-bottom: 0.5rem;">Public API Index</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 1rem;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: var(--wv-accent-cyan); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Session</div>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+                <li><a href="#watch" style="color: var(--wv-text);">why.watch</a></li>
+                <li><a href="#stop" style="color: var(--wv-text);">why.stop</a></li>
+                <li><a href="#is_watching" style="color: var(--wv-text);">why.is_watching</a></li>
+                <li><a href="#WatchSession" style="color: var(--wv-text);">WatchSession</a></li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: var(--wv-accent-cyan); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Tracking / Explanation</div>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+                <li><a href="#track" style="color: var(--wv-text);">why.track</a></li>
+                <li><a href="#explain" style="color: var(--wv-text);">why.explain</a></li>
+                <li><a href="#explain_removed" style="color: var(--wv-text);">why.explain_removed</a></li>
+                <li><a href="#trace" style="color: var(--wv-text);">why.trace</a></li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: var(--wv-accent-cyan); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Data Sources</div>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+                <li><a href="#load_json" style="color: var(--wv-text);">why.load_json</a></li>
+                <li><a href="#load_csv" style="color: var(--wv-text);">why.load_csv</a></li>
+                <li><a href="#load_txt" style="color: var(--wv-text);">why.load_txt</a></li>
+                <li><a href="#get" style="color: var(--wv-text);">why.get</a></li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem; color: var(--wv-accent-cyan); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Pandas Bridge</div>
+              <ul style="list-style: none; padding: 0; margin: 0; line-height: 1.8;">
+                <li><a href="#to_dataframe" style="color: var(--wv-text);">why.to_dataframe</a></li>
+                <li><a href="#explain_modes" style="color: var(--wv-text);">Explain Modes</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. SESSION API -->
+        <h2>Session Management</h2>
+
+        <div id="watch" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.watch(snapshot=False)</h3>
+          <p><strong>Signature:</strong> <code>why.watch(snapshot: bool = False) -&gt; WatchSession</code></p>
+          <p><strong>Purpose:</strong> Starts a WhyValue provenance tracking session. Clears event history, enables pandas instrumentation, and returns a <code>WatchSession</code> context manager.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Parameters:</strong> <code>snapshot</code> (bool, default <code>False</code>) &mdash; When <code>True</code>, captures before/after state snapshots for operations like <code>fillna</code>.</li>
+            <li><strong>Return Value:</strong> <code>WatchSession</code> context manager object.</li>
+            <li><strong>Exceptions:</strong> None. If called while already watching, increments watch depth and prints <code>"WhyValue is already watching."</code>.</li>
+            <li><strong>v0.2 Limitation:</strong> Session state is global; concurrent sessions across multiple threads are not isolated in v0.2.</li>
+          </ul>
+          <div class="code-block-wrapper">
+            <div class="code-header"><span>Example</span><button class="copy-btn">Copy</button></div>
+            <pre><code><span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>(snapshot=<span class="syn-kw">True</span>):
+    df[<span class="syn-str">"col"</span>] = df[<span class="syn-str">"col"</span>].<span class="syn-fn">fillna</span>(<span class="syn-num">0</span>)</code></pre>
+          </div>
+        </div>
+
+        <div id="stop" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.stop(force=True)</h3>
+          <p><strong>Signature:</strong> <code>why.stop(force: bool = True) -&gt; None</code></p>
+          <p><strong>Purpose:</strong> Stops the active WhyValue watch session and unregisters pandas adapter instrumentation.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Parameters:</strong> <code>force</code> (bool, default <code>True</code>) &mdash; If <code>False</code> and watch depth &gt; 1, decrements watch depth without stopping immediately.</li>
+            <li><strong>Return Value:</strong> <code>None</code>.</li>
+            <li><strong>Exceptions:</strong> None. Prints <code>"WhyValue is not currently watching."</code> if called when not watching.</li>
+          </ul>
+        </div>
+
+        <div id="is_watching" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.is_watching()</h3>
+          <p><strong>Signature:</strong> <code>why.is_watching() -&gt; bool</code></p>
+          <p><strong>Purpose:</strong> Checks whether a WhyValue watch session is currently active.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Parameters:</strong> None.</li>
+            <li><strong>Return Value:</strong> <code>bool</code> &mdash; <code>True</code> if watching, <code>False</code> otherwise.</li>
+          </ul>
+        </div>
+
+        <div id="WatchSession" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">WatchSession</h3>
+          <p><strong>Signature:</strong> <code>class WatchSession(snapshot: bool = False)</code></p>
+          <p><strong>Purpose:</strong> Context manager class returned by <code>why.watch()</code>. Automatically invokes <code>why.stop(force=False)</code> on exit.</p>
+        </div>
+
+
+        <!-- 2. TRACKING / EXPLANATION API -->
+        <h2>Tracking &amp; Explanation</h2>
+
+        <div id="track" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.track(obj)</h3>
+          <p><strong>Signature:</strong> <code>why.track(obj: Union[list, dict]) -&gt; Union[TrackedList, TrackedDict]</code></p>
+          <p><strong>Purpose:</strong> Wraps a native Python list or dictionary in a provenance-tracked container (<code>TrackedList</code> or <code>TrackedDict</code>).</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Parameters:</strong> <code>obj</code> (list or dict) &mdash; Raw Python container to track.</li>
+            <li><strong>Return Value:</strong> <code>TrackedList</code> or <code>TrackedDict</code> instance.</li>
+            <li><strong>Exceptions:</strong>
+              <ul>
+                <li><code>RuntimeError</code>: If called outside an active <code>why.watch()</code> session.</li>
+                <li><code>TypeError</code>: If <code>obj</code> is not a list or dictionary.</li>
+              </ul>
+            </li>
+            <li><strong>v0.2 Limitation:</strong> Custom classes, sets, and tuples are not supported by <code>why.track()</code> in v0.2.</li>
+          </ul>
+          <div class="code-block-wrapper">
+            <div class="code-header"><span>Example</span><button class="copy-btn">Copy</button></div>
+            <pre><code><span class="syn-kw">with</span> why.<span class="syn-fn">watch</span>():
+    data = why.<span class="syn-fn">track</span>([<span class="syn-num">10</span>, <span class="syn-num">20</span>])
+    data.<span class="syn-fn">append</span>(<span class="syn-num">30</span>)</code></pre>
+          </div>
+        </div>
+
+        <div id="explain" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.explain(obj, row=None, column=None, mode=None, key=None, index=None)</h3>
+          <p><strong>Signature:</strong> <code>why.explain(obj, row=None, column=None, mode="full", key=None, index=None)</code></p>
+          <p><strong>Purpose:</strong> Explains why a target cell in a pandas DataFrame, key in a TrackedDict, or index in a TrackedList has its current value.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Parameters:</strong>
+              <ul>
+                <li><code>obj</code>: Target pandas DataFrame, Series, TrackedDict, or TrackedList.</li>
+                <li><code>row</code>: 0-indexed row position for DataFrame, key for TrackedDict, or index for TrackedList.</li>
+                <li><code>column</code>: Target column name for DataFrame.</li>
+                <li><code>mode</code> (str, default <code>"full"</code>): Output format &mdash; <code>"full"</code>, <code>"short"</code>, or <code>"json"</code>.</li>
+                <li><code>key</code>: Key name for TrackedDict (optional fallback).</li>
+                <li><code>index</code>: Index number for TrackedList (optional fallback).</li>
+              </ul>
+            </li>
+            <li><strong>Return Value:</strong>
+              <ul>
+                <li><code>mode="full"</code>: Prints human-readable multi-line trace to stdout; returns <code>None</code>.</li>
+                <li><code>mode="short"</code>: Prints and returns a concise single-line summary <code>str</code>.</li>
+                <li><code>mode="json"</code>: Returns a structured Python <code>dict</code> containing event DAG and metadata.</li>
+              </ul>
+            </li>
+            <li><strong>Exceptions:</strong> <code>ValueError</code> if <code>mode</code> is not <code>"full"</code>, <code>"short"</code>, or <code>"json"</code>.</li>
+          </ul>
+          <div class="code-block-wrapper">
+            <div class="code-header"><span>Example</span><button class="copy-btn">Copy</button></div>
+            <pre><code>why.<span class="syn-fn">explain</span>(df, row=<span class="syn-num">0</span>, column=<span class="syn-str">"revenue"</span>, mode=<span class="syn-str">"full"</span>)</code></pre>
+          </div>
+        </div>
+
+        <div id="explain_removed" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.explain_removed(obj=None, row=None)</h3>
+          <p><strong>Signature:</strong> <code>why.explain_removed(obj=None, row=None)</code></p>
+          <p><strong>Purpose:</strong> Explains why a row was excluded from a DataFrame by a boolean filter condition (<code>&gt;</code>, <code>&lt;</code>, <code>&amp;</code>, <code>|</code>) or <code>dropna()</code> step.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Parameters:</strong> <code>obj</code> (DataFrame, optional), <code>row</code> (int, required 0-indexed row position).</li>
+            <li><strong>Return Value:</strong> <code>None</code> (prints explanation to stdout).</li>
+          </ul>
+        </div>
+
+        <div id="trace" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.trace(obj)</h3>
+          <p><strong>Signature:</strong> <code>why.trace(obj: pd.DataFrame) -&gt; None</code></p>
+          <p><strong>Purpose:</strong> Prints all recorded transformation events belonging to the specified DataFrame in chronological order.</p>
+        </div>
+
+
+        <!-- 3. DATA SOURCE API -->
+        <h2>Data Sources</h2>
+
+        <div id="load_json" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.load_json(path, encoding="utf-8")</h3>
+          <p><strong>Signature:</strong> <code>why.load_json(path: Union[str, Path], encoding: str = "utf-8") -&gt; Union[TrackedDict, TrackedList]</code></p>
+          <p><strong>Purpose:</strong> Loads a JSON file into nested <code>TrackedDict</code> and <code>TrackedList</code> containers with attached JSON path metadata (<code>$</code>, <code>$.key</code>, <code>$[0]</code>).</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Watch Requirement:</strong> Must be called inside an active <code>why.watch()</code> session (raises <code>RuntimeError</code> if inactive).</li>
+            <li><strong>Metadata Captured:</strong> <code>source_type="json"</code>, <code>source_path</code>, <code>json_path</code>.</li>
+            <li><strong>Native Errors:</strong> <code>FileNotFoundError</code>, <code>json.JSONDecodeError</code>, <code>UnicodeDecodeError</code> propagate natively.</li>
+          </ul>
+        </div>
+
+        <div id="load_csv" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.load_csv(path, encoding="utf-8", delimiter=",")</h3>
+          <p><strong>Signature:</strong> <code>why.load_csv(path: Union[str, Path], encoding: str = "utf-8", delimiter: str = ",") -&gt; TrackedList</code></p>
+          <p><strong>Purpose:</strong> Loads a CSV file into a <code>TrackedList</code> of <code>TrackedDict</code> rows with 1-based data row coordinates (Row 1 = first row below header).</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Watch Requirement:</strong> Requires active <code>why.watch()</code> context (raises <code>RuntimeError</code> if inactive).</li>
+            <li><strong>Metadata Captured:</strong> <code>source_type="csv"</code>, <code>source_path</code>, <code>csv_row</code>, <code>delimiter</code>, <code>encoding</code>.</li>
+            <li><strong>Note:</strong> All CSV field values are initially loaded as strings.</li>
+          </ul>
+        </div>
+
+        <div id="load_txt" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.load_txt(path, encoding="utf-8", keepends=False)</h3>
+          <p><strong>Signature:</strong> <code>why.load_txt(path: Union[str, Path], encoding: str = "utf-8", keepends: bool = False) -&gt; TrackedList</code></p>
+          <p><strong>Purpose:</strong> Loads a text file into a <code>TrackedList</code> of string lines with 1-based line provenance metadata.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Watch Requirement:</strong> Requires active <code>why.watch()</code> context.</li>
+            <li><strong>Metadata Captured:</strong> <code>source_type="txt"</code>, <code>source_path</code>, <code>line_count</code>, 1-based line numbers.</li>
+          </ul>
+        </div>
+
+        <div id="get" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.get(url, **kwargs)</h3>
+          <p><strong>Signature:</strong> <code>why.get(url: str, **kwargs) -&gt; TrackedResponse</code></p>
+          <p><strong>Purpose:</strong> Performs an HTTP GET request using <code>requests.get()</code> and wraps the response in a <code>TrackedResponse</code>. Calling <code>.json()</code> on the response returns a provenance-tracked container linked to the HTTP request.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Watch Requirement:</strong> Requires active <code>why.watch()</code> context (raises <code>RuntimeError</code> if inactive).</li>
+            <li><strong>Metadata Captured:</strong> <code>source_type="http"</code>, <code>method="GET"</code>, <code>url</code> (sanitized), <code>requested_url</code> (sanitized), <code>status_code</code>, <code>content_type</code>, <code>json_path</code>.</li>
+            <li><strong>Security Behavior:</strong> Query parameters and basic-auth credentials in URLs are automatically sanitized (e.g. <code>token=secret</code> &rarr; <code>token=REDACTED</code>). Headers, cookies, and request bodies are not recorded in provenance events.</li>
+            <li><strong>Scope Note:</strong> v0.2 provides the explicit <code>why.get()</code> helper rather than globally intercepting all <code>requests</code> module calls.</li>
+          </ul>
+        </div>
+
+
+        <!-- 4. PANDAS BRIDGE API -->
+        <h2>Pandas Bridge</h2>
+
+        <div id="to_dataframe" style="margin-bottom: 2.5rem; scroll-margin-top: 5rem;">
+          <h3 style="font-family: var(--font-mono); color: var(--wv-accent-cyan);">why.to_dataframe(data)</h3>
+          <p><strong>Signature:</strong> <code>why.to_dataframe(data: Union[TrackedList, TrackedDict]) -&gt; pd.DataFrame</code></p>
+          <p><strong>Purpose:</strong> Converts a <code>TrackedList</code> or <code>TrackedDict</code> container into a pandas DataFrame while preserving upstream source lineage.</p>
+          <ul style="line-height: 1.7; padding-left: 1.25rem;">
+            <li><strong>Input Types:</strong> <code>TrackedList</code> or <code>TrackedDict</code> (raises <code>TypeError</code> if passed raw untracked lists or dicts).</li>
+            <li><strong>Return Type:</strong> <code>pd.DataFrame</code>.</li>
+            <li><strong>Watch Requirement:</strong> Requires active <code>why.watch()</code> context (raises <code>RuntimeError</code> if inactive).</li>
+            <li><strong>Identity &amp; Metadata:</strong> Generates a fresh unique <code>_whyvalue_id</code> and copies <code>_whyvalue_source</code> metadata into <code>df.attrs</code>.</li>
+          </ul>
+        </div>
+
+
+        <!-- 5. EXPLAIN MODES REFERENCE -->
+        <h2 id="explain_modes">Explain Modes Reference</h2>
+
+        <div style="overflow-x: auto; margin-bottom: 2rem;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--wv-border); background: var(--wv-card-bg);">
+                <th style="padding: 0.75rem 1rem;">Mode</th>
+                <th style="padding: 0.75rem 1rem;">Return Value</th>
+                <th style="padding: 0.75rem 1rem;">Console Output</th>
+                <th style="padding: 0.75rem 1rem;">Primary Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;"><code>full</code></td>
+                <td style="padding: 0.6rem 1rem;"><code>None</code></td>
+                <td style="padding: 0.6rem 1rem;">Multi-line formatted text</td>
+                <td style="padding: 0.6rem 1rem;">Interactive debugging with complete step-by-step origin and transformation history.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;"><code>short</code></td>
+                <td style="padding: 0.6rem 1rem;"><code>str</code></td>
+                <td style="padding: 0.6rem 1rem;">Single-line summary string</td>
+                <td style="padding: 0.6rem 1rem;">Quick logs, inline assertions, or concise summary checks.</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--wv-border);">
+                <td style="padding: 0.6rem 1rem; font-weight: 600;"><code>json</code></td>
+                <td style="padding: 0.6rem 1rem;"><code>dict</code> (Python dictionary)</td>
+                <td style="padding: 0.6rem 1rem;">None</td>
+                <td style="padding: 0.6rem 1rem;">Programmatic inspection, automated audit logging, CI test assertions, and structured reports.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
+

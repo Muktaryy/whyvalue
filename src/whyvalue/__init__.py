@@ -5,6 +5,13 @@ from .core import (
     trace,
     explain,
     explain_removed,
+    WatchSession,
+    track,
+    load_json,
+    load_csv,
+    load_txt,
+    get,
+    to_dataframe,
 )
 
 __all__ = [
@@ -14,4 +21,11 @@ __all__ = [
     "trace",
     "explain",
     "explain_removed",
+    "WatchSession",
+    "track",
+    "load_json",
+    "load_csv",
+    "load_txt",
+    "get",
+    "to_dataframe",
 ]
