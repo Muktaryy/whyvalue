@@ -166,9 +166,9 @@ WhyValue captures before-and-after states for supported operations (such as `fil
 
 ## Documentation
 
-Full documentation, tutorials, and topic guides are available in the project documentation directory:
+For installation, quick starts, Python containers, data sources, pandas integration, cross-source lineage, and the complete API reference:
 
-[Read the documentation](docs/index.html)
+**[Read the WhyValue Documentation →](https://muktaryy.github.io/whyvalue/)**
 
 ---
 
