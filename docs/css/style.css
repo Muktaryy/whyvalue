@@ -863,20 +863,51 @@ code:not(pre code) {
 
 /* Mobile (320px – 767px) */
 @media (max-width: 767px) {
+  :root {
+    --header-height: 56px;
+  }
+
+  .header-wrapper {
+    height: 56px;
+  }
+
   .header-container {
-    padding: 0 1rem;
+    padding: 0 0.85rem;
+  }
+
+  .brand-link {
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .logo-w-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .brand-title {
+    font-size: 1.15rem;
+    white-space: nowrap;
   }
 
   .brand-tagline {
     display: none;
   }
 
-  .nav-right .header-nav-link span {
+  .nav-right .header-nav-link {
     display: none;
   }
 
   .nav-right {
-    gap: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .theme-toggle {
+    padding: 0.35rem;
+  }
+
+  .menu-toggle {
+    padding: 0.35rem 0.5rem;
   }
 
   .hero-brand {
