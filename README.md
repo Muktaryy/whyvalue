@@ -1,72 +1,89 @@
-![WhyValue](docs/assets/branding.png)
+<p align="center">
+  <a href="https://muktaryy.github.io/whyvalue/">
+    <img src="https://raw.githubusercontent.com/Muktaryy/whyvalue/main/docs/assets/whyvalue-readme.png" alt="WhyValue Logo" width="400" />
+  </a>
+</p>
 
-# WhyValue
+<h3 align="center">Ask Your Data Why</h3>
 
-> Ask your data why.
+<p align="center">
+  <em>Transparent data lineage and value provenance for Python.</em>
+</p>
 
-WhyValue is a developer-first Python library for tracking data transformations and explaining why values have the values they do.
-
-WhyValue captures end-to-end data provenance across:
-
-- Python lists and dictionaries (`TrackedList`, `TrackedDict`)
-- JSON files
-- CSV files
-- TXT files
-- HTTP APIs
-- pandas DataFrames & Series
+<p align="center">
+  <a href="https://pypi.org/project/whyvalue/"><img src="https://img.shields.io/pypi/v/whyvalue.svg" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/whyvalue/"><img src="https://img.shields.io/pypi/pyversions/whyvalue.svg" alt="Python Versions"></a>
+  <a href="https://github.com/Muktaryy/whyvalue/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Muktaryy/whyvalue.svg" alt="License"></a>
+  <a href="https://muktaryy.github.io/whyvalue/"><img src="https://img.shields.io/badge/docs-live-blue.svg" alt="Documentation"></a>
+</p>
 
 ---
 
-## The Core Idea
+## What is WhyValue?
 
-```text
-SOURCE
-  ↓
-TRANSFORMATION
-  ↓
-VALUE
-  ↓
-EXPLANATION
+**WhyValue** is a developer-first Python library for data lineage, mutation tracking, and value provenance.
+
+When a pipeline yields an unexpected calculation, a missing field, or an invalid metric, traditional debugging requires stepping through code line-by-line or placing manual print statements across modules. **WhyValue** eliminates this guesswork by capturing the history of your data as it flows from file and network sources through Python objects and pandas DataFrames.
+
+Whenever you ask **"Why does this variable have this value?"**, WhyValue delivers a human-readable explanation of its origin, file boundaries, mathematical operations, and mutation sequence.
+
+---
+
+## Core Mental Model
+
+WhyValue operates as a runtime observer:
+
+```
+┌─────────────────┐       ┌──────────────────────┐       ┌─────────────────┐       ┌──────────────────────┐
+│   Source Data   │ ────► │    Transformations   │ ────► │   Target Value  │ ────► │   Lineage & Provenance│
+│ CSV, JSON, HTTP │       │ Math, Mutates, pandas│       │ Dict, DF, List  │       │ why.explain(target)  │
+└─────────────────┘       └──────────────────────┘       └─────────────────┘       └──────────────────────┘
 ```
 
-When working with data pipelines, it is easy to see *what* final value a variable holds, but much harder to answer *why* it has that value.
+1. **Watch**: Wrap execution blocks with `with why.watch():` to activate observation.
+2. **Track**: Ingest file/HTTP sources (`why.load_csv`, `why.get`) or wrap native structures (`why.track()`).
+3. **Explain**: Query any value or cell at any point using `why.explain()` to inspect its transformation sequence.
 
-- `why.trace(obj)` tells you **what** happened.
-- `why.explain(obj, ...)` tells you **why** a specific value exists.
+---
+
+## Key Features
+
+- 🔍 **Non-Invasive Tracing**: Transparently observes object mutations without altering standard Python semantics.
+- 🌐 **Cross-Source Lineage**: Tracks data across CSV files, JSON documents, text files, and HTTP API responses.
+- 🐼 **Pandas Integration**: Observes DataFrame column creation, element-wise arithmetic, filtering, and assignment.
+- 📜 **Transformation History**: Explains origins down to file names, source line/row indices, and math formulas.
+- 📸 **Snapshot Auditing**: Optional before-and-after state capturing for auditing using `why.watch(snapshot=True)`.
+- ⚡ **Lightweight & Fast**: Pure Python core with minimal dependency requirements for native tracking.
 
 ---
 
 ## Installation
 
+Install WhyValue via PyPI using `pip`:
+
 ```bash
 pip install whyvalue
 ```
 
-For local or development installation from source:
-
-```bash
-pip install -e .
-```
-
-*Note: WhyValue v0.2 development is complete and preparing for its formal v0.2.0 PyPI release.*
+*Requirements: Python 3.10+*
 
 ---
 
 ## Quick Start
 
-Track native Python dictionaries and lists:
+### 1. Tracking Native Python Objects
+
+Track mutations on standard dictionaries and lists:
 
 ```python
 import whyvalue as why
 
 with why.watch():
-    user = why.track({
-        "name": "Ali",
-        "age": 21
-    })
-
+    user = why.track({"name": "Ali", "age": 21})
     user["age"] = 22
+    user["status"] = "active"
 
+    # Ask WhyValue why user['age'] equals 22
     why.explain(user, key="age")
 ```
 
@@ -75,15 +92,9 @@ with why.watch():
 ```text
 Why is age = 22?
 
-Source:
-Memory object
-
-Format:
-Python object
-
 Transformation history:
 
-1. Created dict {'name': 'Ali', 'age': 21}
+1. Original: age = 21
 2. set age = 22
 
 Final:
@@ -92,141 +103,112 @@ age = 22
 
 ---
 
-## Cross-Source Lineage Example
+### 2. Cross-Source Lineage: CSV to Pandas
 
-Load data from a CSV file, convert it to a pandas DataFrame via `why.to_dataframe()`, transform the columns, and explain the calculated result:
+Track data as it flows from external files into pandas DataFrames and derived columns:
 
 ```python
+import pandas as pd
 import whyvalue as why
 
 with why.watch():
+    # Load and track raw CSV data
     rows = why.load_csv("sales.csv")
+
+    # Convert tracked rows into a tracked DataFrame
     df = why.to_dataframe(rows)
 
-    df["price"] = df["price"].astype(float)
-    df["quantity"] = df["quantity"].astype(int)
-    df["total"] = df["price"] * df["quantity"]
+    # Perform pandas calculations
+    df["total"] = df["price"].astype(float) * df["quantity"].astype(int)
 
+    # Explain the lineage of a calculated cell
     why.explain(df, row=0, column="total")
 ```
 
+**Output:**
+
 ```text
+Why is total = 59.97?
+
+Source:
+sales.csv
+
+Format:
 CSV
- ↓
-Tracked data
- ↓
-DataFrame
- ↓
-transformations
- ↓
-final value
- ↓
-explanation
-```
 
-WhyValue traces the final `total` cell all the way back to the original CSV file line and column name.
+Source row:
+1
 
----
+Transformations:
 
-## Supported Features
+1. price × quantity → total
 
-| Category | Supported Capabilities |
-| :--- | :--- |
-| **Python** | `TrackedList`, `TrackedDict` |
-| **Data Sources** | JSON (`why.load_json`), CSV (`why.load_csv`), TXT (`why.load_txt`), HTTP GET APIs (`why.get`) |
-| **Pandas Operations** | Arithmetic (`+`, `-`, `*`, `/`), filtering (`>`, `>=`, `<`, `<=`, `==`, `!=`, `&`, `\|`), `fillna()`, `dropna(subset=[...])`, column operations (`astype`, `round`, `rename`, `map`, `apply`), DataFrame merges (`merge`), SeriesGroupBy aggregations (`sum`, `mean`, `count`, `min`, `max`) |
-| **Provenance & Inspection** | `why.trace()`, `why.explain()`, `why.explain_removed()`, explanation modes (`full`, `short`, `json`), optional state snapshots (`snapshot=True`), cross-source bridge (`why.to_dataframe()`) |
-
----
-
-## Data Sources
-
-WhyValue attaches structured origin metadata as data enters your Python session:
-
-- **JSON**: `file → JSON path → value` (e.g. `$.users[0].name`)
-- **CSV**: `file → row → column → value` (1-based data-row index mapping)
-- **TXT**: `file → line → value` (1-based line number tracking)
-- **HTTP**: `request → JSON path → value` (sanitized URL, status code, method)
-- **Python**: `tracked object → mutation → value` (`TrackedList`, `TrackedDict`)
-
----
-
-## Snapshots
-
-When state snapshots are enabled during a watch session:
-
-```python
-with why.watch(snapshot=True):
-    df["val"] = df["val"].fillna(0)
-```
-
-WhyValue captures before-and-after states for supported operations (such as `fillna`), allowing `why.explain()` to report exact previous values prior to transformation at the cost of additional memory.
-
----
-
-## Documentation
-
-For installation, quick starts, Python containers, data sources, pandas integration, cross-source lineage, and the complete API reference:
-
-**[Read the WhyValue Documentation →](https://muktaryy.github.io/whyvalue/)**
-
----
-
-## Project Status
-
-WhyValue v0.2 development is complete and preparing for release.
-
-Current test suite: **174 tests passing**.
-
-WhyValue is still an early-stage project.
-
----
-
-## Limitations
-
-- **Active tracking required:** Operations are recorded only while an active `why.watch()` session is running.
-- **In-memory history:** Event history is stored in memory and resets whenever a new `why.watch()` session starts.
-- **Pandas scope:** Operations cover selected pandas methods, arithmetic operators, filters, missing data handlers, and aggregations (not the entire pandas API).
-- **Cross-source requirement:** Cross-source pandas lineage requires bridging tracked inputs with `why.to_dataframe()`.
-- **Memory impact:** Enabling `snapshot=True` increases memory consumption by storing copy snapshots of transformed data.
-- **CSV string types:** Data loaded via `why.load_csv()` initially contains string values until explicitly coerced or transformed.
-- **HTTP helper scope:** HTTP tracking currently uses the explicit `why.get()` helper rather than globally intercepting all `requests` module calls.
-- **Unintegrated engines:** NumPy, Polars, SQL databases, and DuckDB are not yet supported.
-
----
-
-## Roadmap
-
-Future directions under consideration:
-
-- NumPy array integration
-- Polars DataFrame integration
-- SQL and database query lineage
-- DuckDB engine support
-- Richer graph visualization for provenance chains
-- Broader pandas operation coverage
-
----
-
-## Development
-
-Run the test suite locally:
-
-```bash
-python -m pytest
-```
-
-*(Current audited checkpoint: 174 passing tests.)*
-
-Build distribution packages:
-
-```bash
-python -m build
+Final:
+total = 59.97
 ```
 
 ---
 
-## Links
+## Feature Matrix
 
-- **GitHub Repository**: [https://github.com/Muktaryy/whyvalue](https://github.com/Muktaryy/whyvalue)
-- **PyPI Package**: [https://pypi.org/project/whyvalue/](https://pypi.org/project/whyvalue/)
+| Feature / Domain | Supported Operations | Description |
+| :--- | :--- | :--- |
+| **Native Python** | `dict`, `list`, primitive scalars | Tracks key assignments, item appends, deletions, and updates. |
+| **File I/O** | `why.load_csv()`, `why.load_json()`, `why.load_txt()` | Ingests files while binding line/row indices for origin tracking. |
+| **HTTP Requests** | `why.get(url)` | Records API URLs, HTTP response metadata, and payload structures. |
+| **Pandas DataFrames**| `why.to_dataframe()`, column math, assignments | Tracks column derivations (`df['a'] * df['b']`), fills, and splits. |
+| **Lineage & Inspection** | `why.explain()`, `why.explain_removed()`, `why.trace()` | Generates step-by-step human-readable transformation histories. |
+| **State Snapshots** | `why.watch(snapshot=True)` | Captures state copies before and after operations for auditing. |
+
+---
+
+## Main API Overview
+
+| Function | Signature | Description |
+| :--- | :--- | :--- |
+| `why.watch()` | `watch(snapshot=False)` | Context manager to begin observing data operations. |
+| `why.track()` | `track(obj)` | Wraps a native `dict` or `list` for mutation tracking. |
+| `why.explain()` | `explain(target, key=None, row=None, column=None)` | Prints the lineage and transformation history of a value. |
+| `why.explain_removed()` | `explain_removed(target, key=None)` | Explains why a key or item was removed from a collection. |
+| `why.trace()` | `trace(df)` | Prints a summary of all column transformations on a DataFrame. |
+| `why.load_csv()` | `load_csv(path_or_str)` | Loads a CSV file into tracked dictionary records. |
+| `why.load_json()` | `load_json(path_or_str)` | Loads a JSON document into tracked nested structures. |
+| `why.load_txt()` | `load_txt(path_or_str)` | Loads a text file into tracked line lists. |
+| `why.get()` | `get(url, **kwargs)` | Fetches HTTP API endpoints and tracks JSON response bodies. |
+| `why.to_dataframe()` | `to_dataframe(tracked_data)` | Converts tracked records into a lineage-aware pandas DataFrame. |
+
+---
+
+## Performance & Best Practices
+
+WhyValue is engineered for development, data pipeline auditing, debugging, and automated tests.
+
+- **No Overhead when Inactive**: Calling code outside of `with why.watch():` incurs no tracking overhead.
+- **In-Memory Tracking**: Event history is maintained in memory during a watch session and released upon completion.
+- **Snapshot Mode**: Use `snapshot=True` only when full state auditing is required for complex transformations.
+
+---
+
+## What's New in v0.2
+
+- 🚀 **Cross-Source Tracking**: Provenance across CSV, JSON, TXT files, and HTTP APIs.
+- 🐼 **Full Pandas Integration**: Column math, element-wise transformations, and DataFrame lineage.
+- 📊 **Enhanced Explanations**: Improved transformation outputs with file names, line numbers, and math symbols.
+- ⚡ **Streamlined API**: Dedicated file loaders (`load_csv`, `load_json`, `load_txt`) and HTTP wrappers.
+
+---
+
+## Documentation & Resources
+
+- 📖 **Live Documentation Website**: [https://muktaryy.github.io/whyvalue/](https://muktaryy.github.io/whyvalue/)
+- 📦 **PyPI Package**: [https://pypi.org/project/whyvalue/](https://pypi.org/project/whyvalue/)
+- 💻 **GitHub Repository**: [https://github.com/Muktaryy/whyvalue](https://github.com/Muktaryy/whyvalue)
+- 🐛 **Issue Tracker**: [https://github.com/Muktaryy/whyvalue/issues](https://github.com/Muktaryy/whyvalue/issues)
+
+---
+
+## License
+
+WhyValue is released under the [MIT License](LICENSE).
+
+Developed and maintained by **Muktar Yakub**.
